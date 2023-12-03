@@ -1,28 +1,50 @@
+
 version: 2.1
-setup: true
+
 orbs:
   orb-tools: circleci/orb-tools@12.0
-  shellcheck: circleci/shellcheck@3.1
+  shellcheck: circleci/shellcheck@3.2.0
 
 filters: &filters
   tags:
     only: /.*/
 
 workflows:
-  lint-pack:
+  publish-dev-orb:
+    when:
+      not:
+        equal: [ main, << pipeline.git.branch >> ]
+    jobs:
+      - orb-tools/lint
+      - shellcheck/check:
+          dir: ./src/scripts
+      - orb-tools/pack
+      - orb-tools/publish:
+          context: dev
+          requires: 
+            - orb-tools/pack
+          vcs_type: << pipeline.project.type >>
+          orb_name: xavidop/circleci-orb-hello-world
+          pub_type: dev
+
+
+  publish-orb:
+    when: << pipeline.git.tag >>
     jobs:
       - orb-tools/lint:
           filters: *filters
-      - orb-tools/pack:
-          filters: *filters
-      - orb-tools/review:
-          filters: *filters
       - shellcheck/check:
           filters: *filters
-      # Triggers the next workflow in the Orb Development Kit.
-      - orb-tools/continue:
-          pipeline_number: << pipeline.number >>
+          dir: ./src/scripts
+      - orb-tools/pack:
+          filters: *filters
+      - orb-tools/publish:
+          context: dev
           vcs_type: << pipeline.project.type >>
-          orb_name: <orb-name>
-          requires: [orb-tools/lint, orb-tools/pack, orb-tools/review, shellcheck/check]
+          orb_name: maciuozz/circleci-orb-hello-world
+          pub_type: production
+          requires:
+            - orb-tools/pack
+            - orb-tools/lint
+            - shellcheck/check
           filters: *filters
