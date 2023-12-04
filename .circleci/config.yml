@@ -24,7 +24,7 @@ workflows:
           requires: 
             - orb-tools/pack
           vcs_type: << pipeline.project.type >>
-          orb_name: maciuozz11/circleci-orb-hello-world
+          orb_name: xavidop/circleci-orb-hello-world
           pub_type: dev
 
 
@@ -41,7 +41,7 @@ workflows:
       - orb-tools/publish:
           context: dev
           vcs_type: << pipeline.project.type >>
-          orb_name: maciuozz11/circleci-orb-hello-world
+          orb_name: xavidop/circleci-orb-hello-world
           pub_type: production
           requires:
             - orb-tools/pack
